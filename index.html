@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NON AU MÉGA DATA CENTER - Châteauroux Populaire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lfi-cyan': '#009fe3',
+                        'lfi-red': '#e30613',
+                        'lfi-dark': '#1a1a1a',
+                        'lfi-grey': '#f2f2f2',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        impact: ['Oswald', 'Arial Black', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'lfi': '10px 10px 0px 0px rgba(0,0,0,1)',
+                        'lfi-red': '10px 10px 0px 0px rgba(227,6,19,1)',
+                        'lfi-cyan': '10px 10px 0px 0px rgba(0,159,227,1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Oswald:wght@700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; scroll-behavior: smooth; }
+        .phi-symbol { font-family: serif; font-style: italic; font-weight: bold; }
+        
+        .section-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; line-height: 0.95; }
+        
+        /* LFI Shapes */
+        .lfi-angle-bottom { clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%); }
+        .lfi-skew { transform: skewX(-10deg); }
+        .lfi-marker { background: linear-gradient(180deg, rgba(255,255,255,0) 60%, #009fe3 60%); display: inline; }
+        
+        /* Interactive Elements */
+        .card-stat { cursor: pointer; transition: all 0.2s ease; border: 2px solid transparent; }
+        .card-stat:hover { transform: translate(-5px, -5px); box-shadow: 15px 15px 0px 0px rgba(0,0,0,0.1); }
+        .card-stat.active { border: 4px solid white; background: rgba(255,255,255,0.1); }
+
+        #detailed-text-box { transition: all 0.5s ease; max-height: 0; opacity: 0; overflow: hidden; }
+        #detailed-text-box.visible { max-height: 3000px; opacity: 1; margin-top: 2rem; border-top: 4px solid #1a1a1a; }
+
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .chart-container { position: relative; height: 350px; width: 100%; }
+        .mini-chart-container { position: relative; height: 180px; width: 100%; margin-top: 1rem; }
+        
+        .highlight-box { border-left: 8px solid #e30613; background: #fef2f2; padding: 1.5rem; }
+
+        /* Styles Section 4 */
+        .check-item { position: relative; padding-left: 2.5rem; cursor: help; transition: all 0.3s; }
+        .check-item::before { content: '✓'; position: absolute; left: 0; top: -2px; color: #e30613; font-weight: 900; font-size: 1.8rem; line-height: 1; }
+        
+        /* Tooltip Vignette */
+        .tooltip-vignette { 
+            visibility: hidden; opacity: 0; width: 320px; 
+            background-color: white; color: #1a1a1a; 
+            position: absolute; bottom: 120%; left: 50%; 
+            transform: translateX(-50%) translateY(10px); 
+            padding: 1.5rem; border: 3px solid #009fe3; 
+            box-shadow: 10px 10px 0px rgba(0, 159, 227, 0.3); 
+            z-index: 50; transition: all 0.3s; 
+            pointer-events: none; text-transform: none; 
+            font-weight: 500; font-size: 0.9rem; line-height: 1.5; 
+        }
+        .tooltip-vignette h4 { 
+            color: #e30613; text-transform: uppercase; 
+            font-weight: 900; font-size: 0.8rem; 
+            margin-bottom: 0.5rem; letter-spacing: 0.05em; 
+        }
+        .tooltip-vignette::after { 
+            content: ""; position: absolute; top: 100%; left: 50%; 
+            margin-left: -10px; border-width: 10px; border-style: solid; 
+            border-color: #009fe3 transparent transparent transparent; 
+        }
+        .check-item:hover .tooltip-vignette { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Simulateur Température */
+        .range-slider {
+            -webkit-appearance: none; width: 100%; height: 10px; background: #e5e7eb; outline: none; opacity: 0.9; transition: opacity .2s;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 25px; height: 25px; background: #e30613; cursor: pointer; border: 4px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Vignettes Programmatiques */
+        .guarantee-card { 
+            position: relative; overflow: hidden;
+            border-left: 6px solid #1a1a1a; transition: all 0.3s; background: white; 
+            display: flex; flex-direction: column; justify-content: flex-start; cursor: pointer;
+        }
+        .guarantee-card:hover { border-left-color: #009fe3; transform: translateX(5px); background: #f9fafb; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+
+        .local-vignette {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 26, 26, 0.98); color: white; padding: 1.5rem;
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; text-align: left;
+            opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(10px);
+            pointer-events: none; overflow-y: auto;
+        }
+        .guarantee-card.flipped .local-vignette { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .click-hint {
+            position: absolute; top: 1rem; right: 1rem; font-size: 0.7rem; font-weight: 900;
+            text-transform: uppercase; color: #e30613; border: 1px solid #e30613; padding: 2px 6px; border-radius: 4px; opacity: 0.7;
+        }
+        
+        /* New Hero specific */
+        .hero-bg-shape {
+            position: absolute; right: 0; top: 0; width: 50%; height: 100%;
+            background: #f2f2f2; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-white text-lfi-dark">
+
+    <!-- NAVIGATION -->
+    <header class="fixed top-0 left-0 w-full bg-white z-50 py-4 px-6 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <img src="https://github.com/LFI36/Chateauroux-Populaire-2027/blob/main/451210797_873343874827803_5704456469701416320_n.jpg?raw=true" alt="Logo LFI" class="w-20 h-20 rounded-full object-cover shadow-sm border-2 border-lfi-cyan">
+            <div class="flex flex-col leading-none">
+                <span class="font-black uppercase text-lg tracking-tight text-lfi-dark">Châteauroux Populaire</span>
+                <span class="text-[10px] font-bold text-lfi-cyan uppercase tracking-widest">Collectif Anti-Data Center</span>
+            </div>
+        </div>
+        
+        <!-- BOUTONS D'ACTION -->
+        <div class="hidden lg:flex items-center gap-4">
+            <a href="https://www.mesopinions.com/petition/politique/projet-data-center-google-a-chateauroux/244352" target="_blank" class="border-2 border-lfi-cyan text-lfi-cyan font-black uppercase text-xs px-4 py-4 hover:bg-lfi-cyan hover:text-white transition-all">
+                Signer la pétition
+            </a>
+            <a href="https://actionpopulaire.fr/groupes/82dacd31-5b21-4389-abb0-3d3afed41655/" 
+               target="_blank" 
+               class="bg-lfi-red text-white font-black uppercase text-xs px-6 py-4 hover:bg-black transition-colors shadow-lg">
+                Rejoindre la lutte
+            </a>
+        </div>
+    </header>
+
+    <!-- SECTION 1: HERO -->
+    <section class="relative pt-32 pb-32 overflow-hidden lfi-angle-bottom bg-white">
+        <div class="hero-bg-shape hidden md:block"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 relative z-10 mt-8">
+            <div class="flex flex-col md:flex-row gap-16 items-start">
+                
+                <!-- Colonne Texte -->
+                <div class="w-full md:w-3/5 space-y-8">
+                    <div class="inline-block bg-lfi-cyan text-white font-black text-xs px-3 py-1 uppercase tracking-widest mb-2">
+                        Alerte Écologique & Démocratique
+                    </div>
+                    
+                    <h1 class="section-title text-7xl md:text-8xl text-lfi-dark tracking-tighter">
+                        NOTRE EAU VAUT PLUS <br>
+                        QUE LEURS <span class="text-lfi-cyan">DONNÉES.</span>
+                    </h1>
+                    
+                    <div class="lfi-skew inline-block bg-lfi-red px-6 py-2 shadow-lfi">
+                        <h2 class="section-title text-3xl md:text-5xl text-white italic transform skew-x-12">
+                            NON AU DATA CENTER D'OZANS.
+                        </h2>
+                    </div>
+
+                    <p class="text-xl md:text-2xl font-bold text-gray-700 leading-relaxed max-w-2xl mt-8">
+                        195 hectares bradés à Google. 2 milliards de litres d'eau menacés. Face à l'opacité et au saccage écologique, 
+                        <span class="lfi-marker px-1">nous exigeons l'arrêt du projet.</span>
+                    </p>
+                    
+                    <div class="pt-6 flex flex-wrap gap-4">
+                        <button onclick="scrollToElement('section-dossier')" class="bg-lfi-dark text-white font-black uppercase text-xl px-8 py-4 shadow-lfi hover:bg-lfi-cyan hover:shadow-lfi-cyan transition-all">
+                            Lire le Dossier à Charge
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Colonne Visuelle (Cartes d'Alerte) -->
+                <div class="w-full md:w-2/5 flex flex-col gap-6 mt-8 md:mt-0">
+                    
+                    <!-- Carte 1 -->
+                    <div class="bg-white border-2 border-black p-6 shadow-lfi relative group hover:-translate-y-1 transition-transform">
+                        <div class="absolute -top-3 -right-3 bg-lfi-cyan text-white w-12 h-12 flex items-center justify-center font-black rounded-full z-10 text-xl">!</div>
+                        <h3 class="font-black text-2xl uppercase mb-2 text-lfi-dark">Urgence Hydrique</h3>
+                        <div class="w-12 h-1 bg-lfi-cyan mb-4"></div>
+                        <p class="font-bold text-gray-600 leading-snug">
+                            L'Indre subit des sécheresses régulières. Refroidir des serveurs va pomper nos nappes phréatiques au détriment de l'agriculture.
+                        </p>
+                    </div>
+
+                    <!-- Carte 2 -->
+                    <div class="bg-white border-2 border-black p-6 shadow-lfi relative group hover:-translate-y-1 transition-transform">
+                        <h3 class="font-black text-2xl uppercase mb-2 text-lfi-dark">Déni Démocratique</h3>
+                        <div class="w-12 h-1 bg-lfi-red mb-4"></div>
+                        <p class="font-bold text-gray-600 leading-snug">
+                            Terres vendues 58,5 M€ à une filiale opaque sans aucun débat public. Le mirage technologique masque une aberration foncière.
+                        </p>
+                    </div>
+
+                    <!-- Carte 3 -->
+                    <div class="bg-white border-2 border-black p-6 shadow-lfi relative group hover:-translate-y-1 transition-transform">
+                        <h3 class="font-black text-2xl uppercase mb-2 text-lfi-dark">Gouffre Énergétique</h3>
+                        <div class="w-12 h-1 bg-gray-400 mb-4"></div>
+                        <p class="font-bold text-gray-600 leading-snug">
+                            Une consommation électrique équivalente à l'ensemble du département de l'Indre (200 000 habitants). Un non-sens total face à la sobriété exigée.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: LES CHIFFRES -->
+    <section id="section-partage" class="bg-lfi-dark text-white py-24 px-4 relative overflow-hidden">
+        <div class="max-w-6xl mx-auto reveal">
+            <h2 class="section-title text-5xl md:text-7xl mb-12 uppercase italic">Le vrai visage de <span class="text-lfi-cyan">l'industrie du Cloud.</span></h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                <div class="space-y-6">
+                    <p class="text-2xl font-bold leading-tight">La droite locale nous vend un eldorado numérique. La réalité, c'est l'accaparement de <span class="text-lfi-red underline decoration-4 underline-offset-8 text-3xl">NOS BIENS COMMUNS</span> au profit exclusif d'une multinationale.</p>
+                </div>
+                <div class="border-l-4 border-lfi-cyan pl-8 space-y-4">
+                    <p class="text-xl opacity-80 italic">Une infrastructure disproportionnée pour notre territoire.</p>
+                    <p class="text-sm uppercase tracking-widest font-black text-gray-400">Cliquez sur les données pour ouvrir le rapport ↓</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Case 1 -->
+                <div id="stat-eau" onclick="toggleDetails('eau')" class="card-stat bg-white/5 p-8 border-t-8 border-lfi-cyan shadow-2xl">
+                    <span class="text-7xl font-black block leading-none tracking-tighter">2</span>
+                    <p class="text-lg font-black uppercase mt-4 tracking-wide leading-tight">Milliards de litres <br>d'eau par an</p>
+                    <p class="text-xs mt-4 opacity-50 uppercase font-black">La moitié de Châteauroux</p>
+                </div>
+
+                <!-- Case 2 -->
+                <div id="stat-energie" onclick="toggleDetails('energie')" class="card-stat bg-white/5 p-8 border-t-8 border-lfi-red shadow-2xl">
+                    <span class="text-7xl font-black block leading-none tracking-tighter">200K</span>
+                    <p class="text-lg font-black uppercase mt-4 tracking-wide leading-tight">Habitants en <br>équivalent électrique</p>
+                    <p class="text-xs mt-4 opacity-50 uppercase font-black">Le département entier</p>
+                </div>
+
+                <!-- Case 3 -->
+                <div id="stat-emploi" onclick="toggleDetails('emploi')" class="card-stat bg-white/5 p-8 border-t-8 border-gray-400 shadow-2xl">
+                    <span class="text-7xl font-black block leading-none tracking-tighter">&lt;0.5</span>
+                    <p class="text-lg font-black uppercase mt-4 tracking-wide leading-tight">Emploi créé <br>par hectare</p>
+                    <p class="text-xs mt-4 opacity-50 uppercase font-black">Pour 195 Ha confisqués</p>
+                </div>
+            </div>
+
+            <div id="detailed-text-box" class="bg-white text-lfi-dark p-8 md:p-12 rounded-sm shadow-[20px_20px_0px_0px_rgba(255,255,255,0.1)]">
+                
+                <!-- CONTENT EAU -->
+                <div id="content-eau" class="hidden space-y-8">
+                    <div class="flex flex-col lg:flex-row gap-12 items-center">
+                        <div class="lg:w-1/2 space-y-6">
+                            <div>
+                                <h3 class="text-6xl font-black uppercase italic tracking-tighter text-lfi-cyan inline-block border-b-8 border-lfi-dark pb-2 mb-2">Pillage Hydrique</h3>
+                                <p class="text-sm font-black uppercase text-gray-400 tracking-widest">Le Mythe du Free Cooling</p>
+                            </div>
+                            
+                            <p class="text-lg font-bold leading-relaxed text-gray-800">
+                                Un data center chauffe énormément. Dès que la température dépasse les 30°C l'été, le refroidissement par l'air (Free Cooling) ne suffit plus. 
+                                <br><br>
+                                Il faut basculer sur un refroidissement adiabatique : vaporiser <span class="bg-lfi-cyan text-white px-2 py-0.5">des millions de litres d'eau potable</span> pour refroidir l'air. Google fait cela dans l'Oregon, asséchant la région. Accepter cela dans l'Indre, alors que nos agriculteurs subissent des restrictions, est un crime climatique.
+                            </p>
+                        </div>
+
+                        <div class="lg:w-1/2 w-full">
+                            <div class="chart-container bg-white p-4 border-2 border-gray-100 shadow-inner rounded-xl">
+                                <canvas id="waterChart"></canvas>
+                            </div>
+                            <p class="text-center text-xs font-bold text-gray-400 mt-4 uppercase tracking-widest">Consommation annuelle projetée (Millions de m³)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTENT ENERGIE -->
+                <div id="content-energie" class="hidden space-y-8">
+                    <div class="flex flex-col lg:flex-row gap-12 items-center">
+                        <div class="lg:w-1/2 space-y-6">
+                            <h3 class="text-4xl font-black uppercase italic border-b-8 border-lfi-red pb-2 mb-4">Gouffre Énergétique</h3>
+                            <p class="text-xl leading-relaxed font-bold">Un site de 195 hectares fonctionnant 24h/24 va saturer le réseau électrique local (RTE).</p>
+                            <div class="highlight-box">
+                                <p class="text-lg">À La Courneuve, un site de seulement 7 hectares consomme comme 50 000 habitants. Le projet d'Ozans est démesuré. Il contredit frontalement les impératifs nationaux de sobriété énergétique.</p>
+                            </div>
+                        </div>
+                        <div class="lg:w-1/2 w-full">
+                            <div class="chart-container bg-white p-4 border-2 border-gray-100 shadow-inner rounded-xl">
+                                <canvas id="energyChart"></canvas>
+                            </div>
+                            <p class="text-center text-xs font-bold text-gray-400 mt-4 uppercase tracking-widest">Équivalence de consommation électrique (Habitants)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTENT EMPLOI -->
+                <div id="content-emploi" class="hidden space-y-8">
+                    <div class="flex flex-col lg:flex-row gap-12 items-center">
+                        <div class="lg:w-1/2 space-y-6">
+                            <h3 class="text-4xl font-black uppercase italic border-b-8 border-gray-400 pb-2 mb-6">Le Mirage de l'Emploi</h3>
+                            <p class="text-lg leading-relaxed font-medium">La zone d'Ozans devait accueillir 4 000 emplois industriels. Aujourd'hui, on nous vend un hangar de machines ultra-automatisé qui embauchera au mieux une centaine de techniciens.</p>
+                            <div class="bg-lfi-dark text-white p-6">
+                                <p class="text-sm font-black uppercase tracking-widest mb-2">Désert économique :</p>
+                                <p class="text-xl italic">L'intelligence reste en Californie ou dans les grandes métropoles. L'Indre n'aura que la pollution visuelle et thermique de la salle des machines.</p>
+                            </div>
+                        </div>
+                        <div class="lg:w-1/2 w-full">
+                            <div class="chart-container bg-white p-4 border-2 border-gray-100 shadow-inner rounded-xl">
+                                <canvas id="jobsChart"></canvas>
+                            </div>
+                            <p class="text-center text-xs font-bold text-gray-400 mt-4 uppercase tracking-widest">Densité : Nombre d'emplois créés par Hectare</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: LE DOSSIER A CHARGE (CARTES RETOURNABLES) -->
+    <section id="section-dossier" class="py-24 px-4 bg-gray-50 border-y-2 border-gray-200">
+        <div class="max-w-7xl mx-auto reveal">
+            <h2 class="section-title text-6xl md:text-8xl mb-4 text-lfi-dark italic">LE DOSSIER À <span class="text-lfi-cyan underline">CHARGE.</span></h2>
+            <p class="text-2xl font-bold mb-16 text-gray-500">Démontage systématique des arguments des promoteurs du projet.</p>
+            <p class="text-sm font-black uppercase text-lfi-red mb-8 tracking-widest text-center animate-pulse">CLIQUEZ SUR LES CARTES POUR LIRE L'ANALYSE</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                
+                <!-- 01. Free Cooling -->
+                <div class="guarantee-card p-6 shadow-lg min-h-[400px]" onclick="toggleFlip(this)">
+                    <div class="click-hint">Décryptage</div>
+                    <div>
+                        <span class="text-lfi-cyan font-black text-4xl italic block mb-2">01.</span>
+                        <h3 class="font-black text-xl uppercase leading-none mb-1">Le mensonge du "Free Cooling"</h3>
+                        <p class="text-sm font-bold text-gray-600 mt-4">Les promoteurs affirment que les serveurs seront refroidis uniquement par l'air ambiant, économisant l'eau.</p>
+                    </div>
+                    <div class="local-vignette">
+                        <h4 class="text-lfi-cyan text-sm font-black uppercase mb-4 italic leading-tight">La Réalité Thermodynamique</h4>
+                        <p class="text-sm text-gray-200 mb-2">Le Free Cooling fonctionne en Norvège, pas dans le Berry en plein mois d'août. Au-delà de 30°C, la technologie s'effondre.</p>
+                        <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
+                            <li><strong>Conséquence :</strong> Bascule sur refroidissement adiabatique.</li>
+                            <li><strong>Impact :</strong> Pulvérisation d'eau potable massive au pire moment de l'année.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 02. Boucle Thermique -->
+                <div class="guarantee-card p-6 shadow-lg min-h-[400px]" onclick="toggleFlip(this)">
+                    <div class="click-hint">Décryptage</div>
+                    <div>
+                        <span class="text-lfi-cyan font-black text-4xl italic block mb-2">02.</span>
+                        <h3 class="font-black text-xl uppercase leading-none mb-1">L'arnaque de la "Boucle Thermique"</h3>
+                        <p class="text-sm font-bold text-gray-600 mt-4">Le maire promet d'utiliser la chaleur des serveurs pour chauffer la ville d'Ozans à Châteauroux.</p>
+                    </div>
+                    <div class="local-vignette">
+                        <h4 class="text-lfi-cyan text-sm font-black uppercase mb-4 italic leading-tight">Un double aveu d'échec</h4>
+                        <p class="text-sm text-gray-200 mb-2">Transporter de la chaleur sur de telles distances est une hérésie physique (déperdition massive).</p>
+                        <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
+                            <li><strong>Aveu technologique :</strong> Cela prouve que le Free Cooling ne suffit pas et qu'ils utiliseront du "watercooling".</li>
+                            <li><strong>Risque financier :</strong> C'est l'argent public qui paiera les kilomètres de tuyaux pour "greenwasher" Google.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 03. Silicon Valley -->
+                <div class="guarantee-card p-6 shadow-lg min-h-[400px]" onclick="toggleFlip(this)">
+                    <div class="click-hint">Décryptage</div>
+                    <div>
+                        <span class="text-lfi-cyan font-black text-4xl italic block mb-2">03.</span>
+                        <h3 class="font-black text-xl uppercase leading-none mb-1">Le mirage de la "Silicon Valley"</h3>
+                        <p class="text-sm font-bold text-gray-600 mt-4">Le projet attirerait un écosystème de startups et d'entreprises innovantes autour du site.</p>
+                    </div>
+                    <div class="local-vignette">
+                        <h4 class="text-lfi-cyan text-sm font-black uppercase mb-4 italic leading-tight">Le Cloud abolit la géographie</h4>
+                        <p class="text-sm text-gray-200 mb-2">Une startup à Paris utilise les mêmes serveurs. S'installer physiquement à côté d'un ventilateur géant n'a aucun intérêt.</p>
+                        <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
+                            <li><strong>Preuve :</strong> Ashburn (USA), Luleå (Suède). Aucun pôle tech n'a émergé autour de ces immenses data centers. Ce sont des dortoirs à machines.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 04. Gâchis Foncier -->
+                <div class="guarantee-card p-6 shadow-lg min-h-[400px]" onclick="toggleFlip(this)">
+                    <div class="click-hint">Décryptage</div>
+                    <div>
+                        <span class="text-lfi-cyan font-black text-4xl italic block mb-2">04.</span>
+                        <h3 class="font-black text-xl uppercase leading-none mb-1">Le massacre du Z.A.N.</h3>
+                        <p class="text-sm font-bold text-gray-600 mt-4">La préemption de 195 hectares viabilisés pour un ratio foncier/emploi catastrophique.</p>
+                    </div>
+                    <div class="local-vignette">
+                        <h4 class="text-lfi-cyan text-sm font-black uppercase mb-4 italic leading-tight">Une hérésie territoriale</h4>
+                        <p class="text-sm text-gray-200 mb-2">Alors que la loi Zéro Artificialisation Nette (ZAN) nous demande de préserver nos sols, on bétonne l'équivalent de 270 terrains de football.</p>
+                        <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
+                            <li><strong>Conséquence :</strong> Ce foncier gâché empêche l'installation d'industries réellement utiles à la transition écologique.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 05. Opacité Fiscale -->
+                <div class="guarantee-card p-6 shadow-lg min-h-[400px]" onclick="toggleFlip(this)">
+                    <div class="click-hint">Décryptage</div>
+                    <div>
+                        <span class="text-lfi-cyan font-black text-4xl italic block mb-2">05.</span>
+                        <h3 class="font-black text-xl uppercase leading-none mb-1">L'opacité "Tricolore Computing"</h3>
+                        <p class="text-sm font-bold text-gray-600 mt-4">Un montage juridique complexe cachant l'identité réelle et les objectifs d'optimisation fiscale.</p>
+                    </div>
+                    <div class="local-vignette">
+                        <h4 class="text-lfi-cyan text-sm font-black uppercase mb-4 italic leading-tight">Des paradis fiscaux à l'Indre</h4>
+                        <p class="text-sm text-gray-200 mb-2">La vente s'opère via "Tricolore Computing", liée à des entités en Irlande et aux Bermudes.</p>
+                        <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
+                            <li><strong>Le danger :</strong> Les retombées fiscales promises (IFER) pourraient être contournées, laissant l'Indre avec les nuisances sans les revenus.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 06. Déni démocratique -->
+                <div class="guarantee-card p-6 shadow-lg min-h-[400px]" onclick="toggleFlip(this)">
+                    <div class="click-hint">Décryptage</div>
+                    <div>
+                        <span class="text-lfi-cyan font-black text-4xl italic block mb-2">06.</span>
+                        <h3 class="font-black text-xl uppercase leading-none mb-1">Le Déni Démocratique</h3>
+                        <p class="text-sm font-bold text-gray-600 mt-4">Une vente express à 58.5 millions d'euros validée sans consultation préalable des citoyens.</p>
+                    </div>
+                    <div class="local-vignette">
+                        <h4 class="text-lfi-cyan text-sm font-black uppercase mb-4 italic leading-tight">Le fait accompli</h4>
+                        <p class="text-sm text-gray-200 mb-2">Un projet qui engage les ressources vitales du territoire (eau, énergie) pour un siècle est passé en force.</p>
+                        <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
+                            <li><strong>Notre demande :</strong> Un audit indépendant avant signature et un référendum local d'initiative citoyenne.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: NOS EXIGENCES (SANCTUARISÉE LFI) -->
+    <section class="bg-[#121212] py-24 px-4 border-t-8 border-lfi-red relative overflow-hidden">
+        <div class="max-w-5xl mx-auto reveal">
+            <h2 class="section-title text-6xl md:text-8xl mb-8 text-white italic">NOS <span class="text-lfi-red underline">EXIGENCES.</span></h2>
+            <p class="text-xl font-bold mb-16 text-gray-400 max-w-3xl">Face au passage en force, le bloc populaire s'organise et pose ses conditions. <span class="text-lfi-cyan italic">(Survolez pour les détails)</span></p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-14 text-lg font-black uppercase tracking-tight relative z-20">
+                <div class="check-item text-white">
+                    <span class="text-lfi-red text-2xl">MORATOIRE IMMÉDIAT</span>
+                    <p class="text-sm font-medium text-gray-500 normal-case mt-1">Suspension de l'avant-contrat de vente.</p>
+                    <div class="tooltip-vignette">
+                        <h4>ARRÊT DU PROJET</h4>
+                        <p>Nous exigeons le gel de la promesse de vente d'un an, le temps qu'une véritable étude d'impact environnemental (eau, électricité, foncier) soit présentée aux citoyens de l'Indre.</p>
+                    </div>
+                </div>
+                <div class="check-item text-white">
+                    <span class="text-lfi-cyan text-2xl">AUDIT INDÉPENDANT</span>
+                    <p class="text-sm font-medium text-gray-500 normal-case mt-1">Transparence totale sur la consommation réelle.</p>
+                    <div class="tooltip-vignette">
+                        <h4>LA VÉRITÉ SUR L'EAU</h4>
+                        <p>Google doit publier les indicateurs PUE et WUE projetés pour les scénarios de canicule (+38°C), démontrant s'ils utiliseront ou non de l'eau potable pour refroidir leurs machines.</p>
+                    </div>
+                </div>
+                <div class="check-item text-white">
+                    <span class="text-gray-100 text-2xl">PRIORITÉ HYDRIQUE</span>
+                    <p class="text-sm font-medium text-gray-500 normal-case mt-1">L'humain et l'agriculteur avant les serveurs.</p>
+                    <div class="tooltip-vignette">
+                        <h4>SÉCURITÉ ALIMENTAIRE</h4>
+                        <p>Inscription dans la loi locale : en cas de sécheresse (vigilance/alerte), le data center doit cesser de pomper de l'eau ou s'arrêter, avant la moindre restriction imposée aux agriculteurs et aux habitants.</p>
+                    </div>
+                </div>
+                <div class="check-item text-white">
+                    <span class="text-gray-100 text-2xl">RÉFÉRENDUM LOCAL</span>
+                    <p class="text-sm font-medium text-gray-500 normal-case mt-1">Consultation contraignante de la population.</p>
+                    <div class="tooltip-vignette">
+                        <h4>DÉMOCRATIE</h4>
+                        <p>Un projet impactant le département pour le siècle à venir ne peut être décidé par quelques élus en huis clos. Les citoyens doivent pouvoir voter "POUR" ou "CONTRE" l'installation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="absolute top-1/2 left-0 -translate-y-1/2 opacity-[0.02] text-[20rem] font-black -rotate-12 pointer-events-none select-none text-white">RÉSISTANCE</div>
+    </section>
+
+    <!-- SECTION 5: SIMULATEUR CLIMATIQUE -->
+    <section id="section-simulateur" class="bg-gray-100 py-24 px-4 border-y-4 border-lfi-dark relative">
+        <div class="max-w-5xl mx-auto reveal">
+            <h2 class="section-title text-5xl md:text-7xl mb-6 text-center italic text-lfi-dark">LE MUR <br><span class="text-lfi-red">CLIMATIQUE.</span></h2>
+            <p class="text-center text-xl font-bold text-gray-600 mb-12">Le "Free Cooling" ne résistera pas à nos étés. <br>Testez l'impact du Data Center selon la température :</p>
+            
+            <div class="bg-white p-8 md:p-12 shadow-2xl border-b-8 border-lfi-cyan mb-12">
+                <div class="flex flex-col gap-8">
+                    <div class="bg-gray-50 p-6 rounded-lg border-2 border-gray-200">
+                        <div class="mb-6">
+                            <label class="block text-xs font-black uppercase text-lfi-red mb-2">Température extérieure à Châteauroux (Été)</label>
+                            <div class="flex items-center gap-4">
+                                <input type="number" id="tempInput" value="25" min="15" max="45" class="w-full bg-transparent border-b-4 border-lfi-red text-4xl font-black outline-none py-2 text-lfi-dark">
+                                <span class="text-4xl font-black text-gray-300">°C</span>
+                            </div>
+                            <input type="range" min="15" max="45" value="25" class="range-slider mt-4" id="tempSlider">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="p-6 border-2 border-gray-200 text-center flex flex-col justify-center">
+                            <h4 class="text-xs font-black uppercase text-gray-500 mb-2">Technologie Utilisée</h4>
+                            <span id="coolingMode" class="text-3xl font-bold text-gray-700 leading-tight">Free Cooling (Air)</span>
+                        </div>
+                        <div id="impactBox" class="p-6 bg-lfi-cyan text-white text-center lfi-angle shadow-xl flex flex-col justify-center transition-colors duration-300">
+                            <h4 class="text-xs font-black uppercase mb-2">Impact sur l'Eau Potable</h4>
+                            <span id="waterImpact" class="text-4xl font-black leading-tight">Faible</span>
+                            <div id="alertTag" class="mt-4 hidden bg-white text-lfi-cyan font-black px-3 py-1 text-sm uppercase italic mx-auto"></div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 italic text-center mt-2">Démonstration simplifiée basée sur les limites thermiques standard des Data Centers (limite d'efficacité air-air autour de 28-30°C).</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION : KIOSQUE MILITANT -->
+    <section class="py-16 px-4 bg-gray-900 border-t-8 border-lfi-cyan relative overflow-hidden">
+        <div class="max-w-6xl mx-auto reveal text-center relative z-10">
+            <h2 class="section-title text-4xl md:text-5xl mb-4 text-white italic">KIOSQUE <span class="text-lfi-cyan">MILITANT</span></h2>
+            <p class="text-gray-400 font-bold mb-8">Téléchargez et diffusez nos arguments contre le projet Ozans.</p>
+            
+            <div class="flex flex-wrap justify-center items-center gap-6">
+                
+                <!-- Bouton Tract 4 Pages (PDF) -->
+                <a href="TRACT%20-%20DATA%20CENTERS%20(LFI%2036).pdf" target="_blank" class="group relative flex items-center justify-between w-full md:w-auto bg-white border-2 border-white hover:border-lfi-red text-lfi-dark px-6 py-4 transition-all focus:outline-none text-left shadow-lg">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-lfi-red text-white p-2">
+                            <!-- Icône Téléchargement / PDF -->
+                            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 16L7 11h3V4h4v7h3l-5 5zm7-2v4H5v-4H3v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-4h-2z"/></svg>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-xs font-black text-gray-500 uppercase tracking-widest">Tract 4 Pages (PDF)</span>
+                            <span class="block font-black text-lg uppercase">Télécharger</span>
+                        </div>
+                    </div>
+                    <span class="ml-6 text-lfi-red group-hover:translate-y-1 transition-transform">▼</span>
+                </a>
+
+                <!-- Bouton Argumentaire Complet (PDF) -->
+                <a href="DATA%20CENTER%20-%20Argumentaire.pdf" target="_blank" class="group relative flex items-center justify-between w-full md:w-auto bg-white border-2 border-white hover:border-lfi-cyan text-lfi-dark px-6 py-4 transition-all focus:outline-none text-left shadow-lg">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-lfi-cyan text-white p-2">
+                            <!-- Icône Dossier / PDF -->
+                            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-xs font-black text-gray-500 uppercase tracking-widest">Argumentaire Complet</span>
+                            <span class="block font-black text-lg uppercase">Télécharger (PDF)</span>
+                        </div>
+                    </div>
+                    <span class="ml-6 text-lfi-cyan group-hover:translate-y-1 transition-transform">▼</span>
+                </a>
+
+                <!-- Bouton Images / Affiches (Modale) -->
+                <button onclick="openTractModal(['a33ce16d-648d-40cf-8cc9-9647d3448994.jpg', 'e7b0b56c-6a16-4fee-954b-4c10c6e0cbbe.jpg'])" class="group relative flex items-center justify-between w-full md:w-auto bg-white border-2 border-white hover:border-gray-500 text-lfi-dark px-6 py-4 transition-all focus:outline-none text-left shadow-lg">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-gray-800 text-white p-2">
+                            <!-- Icône Image -->
+                            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-xs font-black text-gray-500 uppercase tracking-widest">Visuels Sociaux</span>
+                            <span class="block font-black text-lg uppercase">Voir les affiches</span>
+                        </div>
+                    </div>
+                    <span class="ml-6 text-gray-800 group-hover:translate-x-1 transition-transform">▶</span>
+                </button>
+
+                <!-- Bouton Vidéo Facebook -->
+                <a href="https://www.facebook.com/watch/?v=2246393019144749&rdid=1T7FGm1PXsjXKtrb" target="_blank" class="group relative flex items-center justify-between w-full md:w-auto bg-[#1877F2] border-2 border-[#1877F2] hover:bg-white hover:text-[#1877F2] text-white px-6 py-4 transition-all focus:outline-none text-left shadow-lg">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-white text-[#1877F2] p-2 rounded-full group-hover:bg-[#1877F2] group-hover:text-white transition-colors">
+                            <!-- Icône Play -->
+                            <svg class="w-6 h-6 fill-current pl-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-xs font-black uppercase tracking-widest opacity-80 group-hover:opacity-100">Désastre Climatique</span>
+                            <span class="block font-black text-lg uppercase">Voir la vidéo</span>
+                        </div>
+                    </div>
+                    <span class="ml-6 group-hover:translate-x-1 transition-transform">▶</span>
+                </a>
+                
+            </div>
+        </div>
+        <!-- Motif de fond discret -->
+        <div class="absolute top-0 right-0 opacity-5 pointer-events-none">
+            <svg width="400" height="400" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 22h20L12 2z"/></svg>
+        </div>
+    </section>
+
+    <!-- FOOTER / APPEL À L'ACTION -->
+    <section class="py-24 px-4 bg-white flex flex-col items-center text-center border-t-8 border-gray-100">
+        <h2 class="section-title text-7xl md:text-8xl mb-12 italic">LA LUTTE COMMENCE <br><span class="text-lfi-red">ICI.</span></h2>
+        
+        <a href="https://actionpopulaire.fr/groupes/82dacd31-5b21-4389-abb0-3d3afed41655/" target="_blank" class="bg-lfi-dark text-white font-black px-12 py-6 text-2xl lfi-angle hover:bg-lfi-cyan transition-all uppercase italic shadow-lfi mb-8">
+            Rejoindre la résistance
+        </a>
+    </section>
+
+    <footer class="bg-lfi-dark text-white py-16 px-6 relative">
+        <div class="max-w-4xl mx-auto flex flex-col items-center gap-10">
+            <!-- LIENS SOCIAUX SVG -->
+            <div class="flex flex-wrap justify-center gap-8 md:gap-12">
+                <!-- Facebook -->
+                <a href="https://www.facebook.com/LaFranceInsoumiseIndre36/?locale=fr_FR" target="_blank" class="text-gray-400 hover:text-lfi-cyan transition-colors" aria-label="Facebook">
+                    <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                <!-- Instagram -->
+                <a href="https://www.instagram.com/lafranceinsoumiseindre/" target="_blank" class="text-gray-400 hover:text-lfi-red transition-colors" aria-label="Instagram">
+                    <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                    </svg>
+                </a>
+                <!-- X (Twitter) -->
+                <a href="https://x.com/LFI36" target="_blank" class="text-gray-400 hover:text-lfi-cyan transition-colors" aria-label="X (Twitter)">
+                    <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+                        <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/>
+                    </svg>
+                </a>
+                <!-- Bouton Contact (Enveloppe Mail) -->
+                <button onclick="openEmailModal()" class="text-gray-400 hover:text-lfi-cyan transition-colors focus:outline-none" aria-label="Nous contacter par e-mail">
+                    <svg class="w-10 h-10 fill-current" viewBox="0 0 24 24">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="w-24 h-1 bg-lfi-red"></div>
+            <p class="text-gray-400 text-[10px] font-black uppercase tracking-[0.5em] text-center leading-loose">
+                Collectif Anti-Data Center LFI 36<br>La lutte continue.
+            </p>
+        </div>
+    </footer>
+
+    <!-- MODALE POUR AFFICHER LES TRACTS EN IMAGE -->
+    <div id="tractModal" class="fixed inset-0 bg-black/95 z-[110] hidden flex items-center justify-center p-2 md:p-8 transition-opacity opacity-0" onclick="if(event.target === this) closeTractModal()">
+        <button onclick="closeTractModal()" class="absolute top-2 right-4 md:top-6 md:right-8 text-gray-400 hover:text-white text-5xl font-black leading-none focus:outline-none z-50 transition-colors">&times;</button>
+        <div class="relative w-full h-full flex flex-col justify-center items-center transform scale-95 transition-transform duration-300" id="tractModalContent">
+            
+            <div id="pinchInstruction" class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-2 flex flex-col items-center gap-2 md:hidden">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                    Pincez pour zoomer
+                </div>
+            </div>
+
+            <div id="tractImagesContainer" class="flex flex-col md:flex-row gap-4 overflow-auto max-w-full max-h-[85vh] p-2 items-center rounded-sm" style="scrollbar-width: none;">
+                <!-- Les images injectées ici -->
+            </div>
+            
+            <div class="mt-4 flex flex-wrap justify-center gap-4 z-50 shrink-0">
+                <button onclick="shareTract()" class="bg-lfi-cyan text-white px-6 py-3 border-2 border-lfi-cyan font-black uppercase tracking-widest hover:bg-white hover:text-lfi-cyan transition-colors shadow-lfi flex items-center gap-3">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92zM18 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM6 13c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm12 7.02c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+                    <span id="shareBtnText">Partager</span>
+                </button>
+
+                <button id="zoomBtn" onclick="toggleZoom()" class="flex bg-lfi-dark text-white px-6 py-3 border-2 border-lfi-dark font-black uppercase tracking-widest hover:bg-lfi-cyan transition-colors shadow-lfi items-center gap-3">
+                    🔍 Zoomer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE FORMULAIRE DE CONTACT (MISE À JOUR) -->
+    <div id="emailModal" class="fixed inset-0 bg-black/95 z-[110] hidden flex items-center justify-center p-4 transition-opacity opacity-0" onclick="if(event.target === this) closeEmailModal()">
+        <div class="bg-white max-w-md w-full p-8 border-t-8 border-lfi-cyan shadow-lfi transform scale-95 transition-transform duration-300 relative" id="emailModalContent">
+            <button onclick="closeEmailModal()" class="absolute top-4 right-6 text-gray-400 hover:text-lfi-red text-4xl font-black leading-none focus:outline-none">&times;</button>
+            <h3 class="text-3xl font-black uppercase italic text-lfi-dark mb-6">NOUS <span class="text-lfi-cyan">CONTACTER</span></h3>
+            
+            <div id="formContainer">
+                <form onsubmit="submitContactForm(event)" class="space-y-4 text-left">
+                    <div>
+                        <label class="block text-xs font-black uppercase text-gray-600 mb-1">Votre Nom</label>
+                        <input type="text" name="nom" required class="w-full border-2 border-gray-200 p-2 focus:border-lfi-cyan outline-none transition-colors text-black font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase text-gray-600 mb-1">Votre E-mail</label>
+                        <input type="email" name="email" required class="w-full border-2 border-gray-200 p-2 focus:border-lfi-cyan outline-none transition-colors text-black font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase text-gray-600 mb-1">Votre Message</label>
+                        <textarea name="message" required rows="4" class="w-full border-2 border-gray-200 p-2 focus:border-lfi-cyan outline-none transition-colors resize-none text-black font-medium"></textarea>
+                    </div>
+                    <button type="submit" id="submitBtn" class="w-full bg-lfi-dark text-white font-black uppercase py-4 hover:bg-lfi-cyan transition-colors shadow-lfi mt-2">
+                        Envoyer le message
+                    </button>
+                </form>
+            </div>
+
+            <div id="formSuccess" class="hidden bg-green-50 border-l-4 border-green-500 p-6 text-center">
+                <p class="text-lg font-black text-green-800 mb-2">Message envoyé avec succès ! ✊</p>
+                <p class="text-sm font-bold text-green-700">Votre alerte a bien été transmise au collectif. Nous vous répondrons très vite.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fonction de défilement sécurisée
+        function scrollToElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                console.warn("Élément introuvable pour le défilement :", elementId);
+            }
+        }
+
+        // Révéler les éléments au scroll
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                if (elementTop < windowHeight - 100) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal();
+
+        // Gestion des boîtes de détails
+        function toggleDetails(type) {
+            const box = document.getElementById('detailed-text-box');
+            const contentEau = document.getElementById('content-eau');
+            const contentEnergie = document.getElementById('content-energie');
+            const contentEmploi = document.getElementById('content-emploi');
+            
+            const cardEau = document.getElementById('stat-eau');
+            const cardEnergie = document.getElementById('stat-energie');
+            const cardEmploi = document.getElementById('stat-emploi');
+            
+            // Reset all
+            [cardEau, cardEnergie, cardEmploi].forEach(el => el && el.classList.remove('active'));
+            [contentEau, contentEnergie, contentEmploi].forEach(el => el && el.classList.add('hidden'));
+
+            if (type === 'eau') {
+                contentEau.classList.remove('hidden');
+                cardEau.classList.add('active');
+                if (box) box.style.boxShadow = "20px 20px 0px 0px rgba(0, 159, 227, 0.3)";
+                initWaterChart();
+            } else if (type === 'energie') {
+                contentEnergie.classList.remove('hidden');
+                cardEnergie.classList.add('active');
+                if (box) box.style.boxShadow = "20px 20px 0px 0px rgba(227, 6, 19, 0.3)";
+                initEnergyChart();
+            } else if (type === 'emploi') {
+                contentEmploi.classList.remove('hidden');
+                cardEmploi.classList.add('active');
+                if (box) box.style.boxShadow = "20px 20px 0px 0px rgba(156, 163, 175, 0.3)";
+                initJobsChart();
+            }
+            
+            if (box) {
+                box.classList.add('visible');
+                setTimeout(() => { 
+                    box.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+                }, 150);
+            }
+        }
+
+        function toggleFlip(element) {
+            document.querySelectorAll('.guarantee-card').forEach(card => {
+                if (card !== element) card.classList.remove('flipped');
+            });
+            element.classList.toggle('flipped');
+        }
+
+        // Modales Tracts
+        let isZoomed = false;
+        function openTractModal(imageUrls) {
+            const modal = document.getElementById('tractModal');
+            const content = document.getElementById('tractModalContent');
+            const container = document.getElementById('tractImagesContainer');
+            container.innerHTML = '';
+            let urls = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
+            isZoomed = false;
+            document.getElementById('zoomBtn').innerHTML = '🔍 Zoomer';
+            
+            urls.forEach((url, index) => {
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = "max-w-full md:max-w-[45vw] h-auto max-h-[85vh] object-contain shadow-[0_0_30px_rgba(0,0,0,0.5)] border-4 border-lfi-dark shrink-0 transition-all duration-300";
+                container.appendChild(img);
+            });
+            container.dataset.shareUrl = urls[0];
+            
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTractModal() {
+            const modal = document.getElementById('tractModal');
+            const content = document.getElementById('tractModalContent');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                document.getElementById('tractImagesContainer').innerHTML = '';
+            }, 300);
+        }
+
+        function toggleZoom() {
+            isZoomed = !isZoomed;
+            const imgs = document.querySelectorAll('#tractImagesContainer img');
+            const btn = document.getElementById('zoomBtn');
+            const container = document.getElementById('tractImagesContainer');
+            
+            if (isZoomed) {
+                imgs.forEach(img => {
+                    img.classList.remove('max-w-full', 'md:max-w-[45vw]', 'max-h-[85vh]');
+                    img.classList.add('w-[200vw]', 'md:w-[80vw]', 'max-w-none');
+                });
+                container.className = 'flex flex-col gap-4 overflow-auto max-w-full max-h-[85vh] p-2 items-start rounded-sm';
+                btn.innerHTML = '🔍 Dézoomer';
+            } else {
+                imgs.forEach(img => {
+                    img.classList.add('max-w-full', 'md:max-w-[45vw]', 'max-h-[85vh]');
+                    img.classList.remove('w-[200vw]', 'md:w-[80vw]', 'max-w-none');
+                });
+                container.className = 'flex flex-col md:flex-row gap-4 overflow-auto max-w-full max-h-[85vh] p-2 items-center rounded-sm';
+                btn.innerHTML = '🔍 Zoomer';
+            }
+        }
+
+        function shareTract() {
+            const siteUrl = window.location.href;
+            const shareData = { title: 'Dossier LFI Data Center', text: 'Consultez le dossier contre le data center de Châteauroux :', url: siteUrl };
+            const btnText = document.getElementById('shareBtnText');
+            if (navigator.share) {
+                navigator.share(shareData).catch(console.error);
+            } else {
+                const dummy = document.createElement('textarea');
+                document.body.appendChild(dummy);
+                dummy.value = siteUrl; dummy.select(); document.execCommand('copy'); document.body.removeChild(dummy);
+                btnText.innerText = "Lien copié !";
+                setTimeout(() => { btnText.innerText = "Partager"; }, 3000);
+            }
+        }
+
+        // --- GESTION DU NOUVEAU FORMULAIRE E-MAIL ---
+        function openEmailModal() {
+            // Réinitialiser le formulaire
+            document.getElementById('formContainer').classList.remove('hidden');
+            document.getElementById('formSuccess').classList.add('hidden');
+            const form = document.querySelector('#formContainer form');
+            if(form) form.reset();
+
+            const modal = document.getElementById('emailModal');
+            const content = document.getElementById('emailModalContent');
+            modal.classList.remove('hidden'); 
+            void modal.offsetWidth; 
+            modal.classList.remove('opacity-0'); 
+            content.classList.remove('scale-95'); 
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEmailModal() {
+            const modal = document.getElementById('emailModal');
+            const content = document.getElementById('emailModalContent');
+            modal.classList.add('opacity-0'); 
+            content.classList.add('scale-95'); 
+            setTimeout(() => { 
+                modal.classList.add('hidden'); 
+                document.body.style.overflow = 'auto'; 
+            }, 300);
+        }
+
+        function submitContactForm(event) {
+            event.preventDefault(); // Empêche le rechargement de la page
+            const form = event.target;
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerText;
+            
+            // Animation du bouton
+            btn.innerText = "ENVOI EN COURS...";
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const formData = new FormData(form);
+            // L'URL secrète générée depuis le script de votre compte noreplylfi36@gmail.com
+            const url = "https://script.google.com/macros/s/AKfycbxK1T11GvmC1iPoAzCgOMN2A3AByKp9YcVqvCBg0SH8WdlMAQLqssHNg06lvy3JZgdA3g/exec";
+
+            fetch(url, {
+                method: 'POST',
+                mode: 'no-cors', // Évite les erreurs de sécurité liées aux redirections Google
+                body: formData
+            }).then(() => {
+                // Afficher le message de succès
+                document.getElementById('formContainer').classList.add('hidden');
+                document.getElementById('formSuccess').classList.remove('hidden');
+                
+                // Fermer la modale automatiquement après 3 secondes
+                setTimeout(() => { closeEmailModal(); }, 3000);
+            }).catch(error => {
+                alert("Une erreur est survenue lors de l'envoi du message. Veuillez réessayer.");
+            }).finally(() => {
+                // Restaurer le bouton
+                btn.innerText = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
+        }
+
+
+        // --- CHART JS INITS ---
+        let waterChart, energyChart, jobsChart = null;
+
+        function initWaterChart() {
+            if (waterChart) return;
+            const ctx = document.getElementById('waterChart').getContext('2d');
+            waterChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Consommation Châteauroux (Entière)', 'Data Center (Projet)'],
+                    datasets: [{
+                        label: 'Millions de m3 par an',
+                        data: [4.0, 2.0], // Exemples factices basés sur les arguments
+                        backgroundColor: ['#1a1a1a', '#009fe3'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#eee' } }, x: { grid: { display: false } } }
+                }
+            });
+        }
+
+        function initEnergyChart() {
+            if (energyChart) return;
+            const ctx = document.getElementById('energyChart').getContext('2d');
+            energyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Réseau Châteauroux', 'Data Center (Projet)'],
+                    datasets: [{
+                        label: 'Équivalent Habitants',
+                        data: [43000, 200000],
+                        backgroundColor: ['#1a1a1a', '#e30613'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#eee' } }, x: { grid: { display: false } } }
+                }
+            });
+        }
+
+        function initJobsChart() {
+            if (jobsChart) return;
+            const ctx = document.getElementById('jobsChart').getContext('2d');
+            jobsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Industrie Classique', 'Data Center Google'],
+                    datasets: [{
+                        label: 'Emplois / Hectare',
+                        data: [40, 0.5],
+                        backgroundColor: ['#1a1a1a', '#9ca3af'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#eee' } }, x: { grid: { display: false } } }
+                }
+            });
+        }
+
+        // --- SIMULATEUR CLIMATIQUE (Temperature / Cooling) ---
+        const tempInput = document.getElementById('tempInput');
+        const tempSlider = document.getElementById('tempSlider');
+        const coolingDisplay = document.getElementById('coolingMode');
+        const impactDisplay = document.getElementById('waterImpact');
+        const alertTag = document.getElementById('alertTag');
+        const impactBox = document.getElementById('impactBox');
+        
+        function calculateImpact() {
+            let temp = parseInt(tempInput.value) || 25;
+            
+            if (temp < 30) {
+                coolingDisplay.innerText = "Free Cooling (Air)";
+                impactDisplay.innerText = "Limité";
+                impactBox.className = "p-6 bg-lfi-cyan text-white text-center lfi-angle shadow-xl flex flex-col justify-center transition-colors duration-300";
+                alertTag.classList.add('hidden');
+            } else {
+                coolingDisplay.innerHTML = "Système Adiabatique<br><span class='text-sm text-lfi-red'>Échec du refroidissement par air</span>";
+                impactDisplay.innerText = "CATASTROPHIQUE";
+                impactBox.className = "p-6 bg-lfi-red text-white text-center lfi-angle shadow-xl flex flex-col justify-center transition-colors duration-300";
+                alertTag.innerHTML = `ALERTE : VAPORISATION D'EAU POTABLE`;
+                alertTag.classList.remove('hidden');
+                alertTag.classList.add('block');
+            }
+        }
+        
+        tempInput.addEventListener('input', () => { tempSlider.value = tempInput.value; calculateImpact(); });
+        tempSlider.addEventListener('input', () => { tempInput.value = tempSlider.value; calculateImpact(); });
+        calculateImpact();
+    </script>
+</body>
+</html>
