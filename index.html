@@ -122,13 +122,13 @@
 
     <!-- NAVIGATION -->
     <header class="fixed top-0 left-0 w-full bg-white z-50 py-4 px-6 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-3">
-            <img src="https://github.com/LFI36/Anti-Data-Center/blob/main/451210797_873343874827803_5704456469701416320_n.jpg?raw=true" alt="Logo LFI" class="w-20 h-20 rounded-full object-cover shadow-sm border-2 border-lfi-cyan">
+        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="flex items-center gap-3 group cursor-pointer" title="Retour en haut de la page">
+            <img src="https://github.com/LFI36/Anti-Data-Center/blob/main/451210797_873343874827803_5704456469701416320_n.jpg?raw=true" alt="Logo LFI" class="w-20 h-20 rounded-full object-cover shadow-sm border-2 border-lfi-cyan group-hover:scale-105 group-hover:border-lfi-red transition-all duration-300">
             <div class="flex flex-col leading-none">
-                <span class="font-black uppercase text-lg tracking-tight text-lfi-dark">Châteauroux Populaire</span>
+                <span class="font-black uppercase text-lg tracking-tight text-lfi-dark group-hover:text-lfi-red transition-colors duration-300">Châteauroux Populaire</span>
                 <span class="text-[10px] font-bold text-lfi-cyan uppercase tracking-widest">Collectif Anti-Data Center</span>
             </div>
-        </div>
+        </a>
         
         <div class="hidden lg:flex items-center gap-4">
             <a href="https://www.mesopinions.com/petition/politique/projet-data-center-google-a-chateauroux/244352" target="_blank" class="border-2 border-lfi-cyan text-lfi-cyan font-black uppercase text-xs px-4 py-4 hover:bg-lfi-cyan hover:text-white transition-all">Signer la pétition</a>
@@ -1612,8 +1612,8 @@
 
         // --- ENVOI MAIL AUX ÉLUS ---
         function sendEmailToElus() {
-            // Adresses e-mails réelles et de cabinets des élus de l'Indre et de la Région
-            const adressesElus = "gil.averous@chateauroux-metropole.fr,cabinet@chateauroux-metropole.fr,francois.jolivet@assemblee-nationale.fr,alix.fruchon@assemblee-nationale.fr,f.gerbaud@senat.fr,n.bellurot@senat.fr,marc.fleuret@indre.fr,contact@indre.fr,francois.bonneau@centrevaldeloire.fr";
+            // Adresses e-mails réelles et de cabinets des élus de l'Indre, de la Région et des mairies impactées
+            const adressesElus = "gil.averous@chateauroux-metropole.fr,cabinet@chateauroux-metropole.fr,mairie.etrechet@wanadoo.fr,mairie@ville-lepoinconnet.fr,contact@saint-maur36.fr,francois.jolivet@assemblee-nationale.fr,alix.fruchon@assemblee-nationale.fr,f.gerbaud@senat.fr,n.bellurot@senat.fr,marc.fleuret@indre.fr,contact@indre.fr,francois.bonneau@centrevaldeloire.fr";
             const sujet = "Moratoire immédiat sur le projet de Data Center à Ozans, Châteauroux (36)";
             const corps = `Madame l'Élue, Monsieur l'Élu,\n\nJe vous interpelle aujourd'hui en tant que citoyen(ne) pour vous exprimer ma profonde inquiétude et mon opposition quant à l’opacité entourant le projet de Data Center sur la zone d’Ozans, Châteauroux (36).\n\nL’eau est un bien commun, pas une marchandise. Ce projet prévoit le prélèvement de près de 2 milliards de litres d’eau par an pour le refroidissement de serveurs appartenant à une multinationale. À l’heure du changement climatique et de la pression croissante sur nos nappes phréatiques, sacrifier une telle ressource pour des intérêts privés sans aucun débat public est une aberration écologique et démocratique.\n\nLe collectif Châteauroux Populaire a déjà adressé une mise en demeure par LRAR pour obtenir les documents administratifs et l’étude d’impact que vous nous cachez. En tant que représentant(e) de notre territoire, vous ne pouvez plus vous abriter derrière le secret des affaires.\n\nJe vous demande solennellement :\n- D’exiger un moratoire immédiat sur ce projet.\n- De rendre publiques toutes les conventions signées avec Tricolore Computing ou Google.\n- D'organiser une véritable consultation citoyenne sur l'utilisation de nos ressources en eau.\n\nNous ne laisserons pas nos ressources être asséchées par une "fuite en avant" technologique qui ne profite pas aux Castelroussins. Je suivrai avec la plus grande attention vos votes et vos prises de position sur ce dossier.\n\nDans l'attente de votre réponse, je vous prie d'agréer, Madame l'Élue, Monsieur l'Élu, l'expression de mes salutations citoyennes.`;
             
