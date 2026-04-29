@@ -90,8 +90,21 @@
             opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(10px); pointer-events: none; overflow-y: auto;
         }
         .guarantee-card.flipped .local-vignette { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        .click-hint { position: absolute; top: 1rem; right: 1rem; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; color: #e30613; border: 1px solid #e30613; padding: 2px 6px; border-radius: 4px; opacity: 0.7; }
+        .click-hint { position: absolute; top: 1rem; right: 1rem; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; color: #e30613; border: 1px solid rgba(227,6,19,0.5); padding: 2px 6px; border-radius: 4px; animation: blink-hint 3s ease-in-out infinite; }
         
+        @keyframes blink-hint {
+            0%, 100% { background-color: transparent; opacity: 0.5; box-shadow: none; }
+            50% { background-color: rgba(227,6,19,0.05); opacity: 1; box-shadow: 0 0 8px rgba(227,6,19,0.2); }
+        }
+
+        .btn-en-savoir-plus { animation: blink-btn 3s infinite; }
+        .btn-en-savoir-plus:hover { animation: none; }
+        
+        @keyframes blink-btn {
+            0%, 100% { background-color: white; color: #1a1a1a; border-color: white; }
+            50% { background-color: #009fe3; color: white; border-color: #009fe3; box-shadow: 0 0 20px rgba(0, 159, 227, 0.4); }
+        }
+
         .hero-bg-shape { position: absolute; right: 0; top: 0; width: 50%; height: 100%; background: #f2f2f2; clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%); z-index: 0; }
         
         /* Modale Dossier Content Styling */
@@ -108,7 +121,7 @@
 <body class="bg-white text-lfi-dark">
 
     <!-- NAVIGATION -->
-    <header class="fixed top-0 left-0 w-full bg-white z-40 py-4 px-6 flex justify-between items-center shadow-sm">
+    <header class="fixed top-0 left-0 w-full bg-white z-50 py-4 px-6 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-3">
             <img src="https://github.com/LFI36/Anti-Data-Center/blob/main/451210797_873343874827803_5704456469701416320_n.jpg?raw=true" alt="Logo LFI" class="w-20 h-20 rounded-full object-cover shadow-sm border-2 border-lfi-cyan">
             <div class="flex flex-col leading-none">
@@ -119,9 +132,24 @@
         
         <div class="hidden lg:flex items-center gap-4">
             <a href="https://www.mesopinions.com/petition/politique/projet-data-center-google-a-chateauroux/244352" target="_blank" class="border-2 border-lfi-cyan text-lfi-cyan font-black uppercase text-xs px-4 py-4 hover:bg-lfi-cyan hover:text-white transition-all">Signer la pétition</a>
+            <button onclick="sendEmailToElus()" class="bg-lfi-dark text-white font-black uppercase text-xs px-4 py-4 hover:bg-lfi-cyan transition-colors shadow-sm">Interpeller les élus</button>
             <a href="https://actionpopulaire.fr/groupes/82dacd31-5b21-4389-abb0-3d3afed41655/" target="_blank" class="bg-lfi-red text-white font-black uppercase text-xs px-6 py-4 hover:bg-black transition-colors shadow-lg">Rejoindre la lutte</a>
         </div>
+
+        <!-- BOUTON MENU BURGER (MOBILE UNIQUEMENT) -->
+        <button onclick="toggleMobileMenu()" class="lg:hidden flex flex-col justify-center items-center gap-1.5 w-10 h-10 relative z-[60] focus:outline-none">
+            <span id="burgerLine1" class="w-8 h-1 bg-lfi-dark transition-all duration-300 origin-center"></span>
+            <span id="burgerLine2" class="w-8 h-1 bg-lfi-dark transition-all duration-300"></span>
+            <span id="burgerLine3" class="w-8 h-1 bg-lfi-dark transition-all duration-300 origin-center"></span>
+        </button>
     </header>
+
+    <!-- MENU MOBILE PLEIN ÉCRAN -->
+    <div id="mobileMenu" class="fixed inset-0 bg-white z-40 flex flex-col items-center justify-center gap-8 opacity-0 pointer-events-none transition-all duration-300 lg:hidden pt-20">
+        <a href="https://www.mesopinions.com/petition/politique/projet-data-center-google-a-chateauroux/244352" target="_blank" onclick="toggleMobileMenu()" class="border-4 border-lfi-cyan text-lfi-cyan font-black uppercase text-xl px-8 py-5 w-[85%] max-w-sm text-center shadow-[10px_10px_0px_0px_rgba(0,159,227,0.2)]">Signer la pétition</a>
+        <button onclick="sendEmailToElus(); toggleMobileMenu();" class="bg-lfi-dark text-white font-black uppercase text-xl px-8 py-5 w-[85%] max-w-sm text-center shadow-lfi">Interpeller les élus</button>
+        <a href="https://actionpopulaire.fr/groupes/82dacd31-5b21-4389-abb0-3d3afed41655/" target="_blank" onclick="toggleMobileMenu()" class="bg-lfi-red text-white font-black uppercase text-xl px-8 py-5 w-[85%] max-w-sm text-center shadow-lfi-red">Rejoindre la lutte</a>
+    </div>
 
     <!-- SECTION 1: HERO -->
     <section class="relative pt-32 pb-48 md:pb-32 overflow-hidden lfi-angle-bottom bg-white">
@@ -218,7 +246,13 @@
                             <div class="bg-red-50 border-l-4 border-lfi-red p-5 mt-6 shadow-sm relative overflow-hidden">
                                 <div class="absolute top-0 right-0 bg-lfi-red text-white text-[10px] font-black uppercase px-2 py-1">Alerte Vitale</div>
                                 <h4 class="text-lfi-red font-black uppercase text-xl mb-2 mt-2">Risque d'assèchement d'ici 10 ans</h4>
-                                <p class="text-sm text-gray-800 font-bold leading-relaxed">Ce pompage estival intensif va créer un <strong>"cône de rabattement"</strong>. La nappe phréatique va baisser structurellement. D'ici 10 ans, les forages peu profonds de nos agriculteurs aspireront de la boue. La multinationale, avec ses milliards, forera simplement plus profond. La source sera à sec pour nous, mais jamais pour eux.</p>
+                                <p class="text-sm text-gray-800 font-bold leading-relaxed mb-3">Ce pompage estival intensif va créer un <strong>"cône de rabattement"</strong>. La nappe phréatique va baisser structurellement, obligeant à forer 100 mètres plus bas pour trouver l'eau. Le coût de cette "guerre des puits" sera dévastateur :</p>
+                                <ul class="text-sm text-gray-800 font-bold leading-relaxed list-disc pl-5 space-y-1">
+                                    <li><strong>Pour l'agriculteur :</strong> ~15 000 € le forage. De quoi ruiner une exploitation.</li>
+                                    <li><strong>Pour la Ville (Eau potable) :</strong> Des centaines de milliers d'euros (normes sanitaires). Nos impôts exploseront.</li>
+                                    <li><strong>Pour Google :</strong> ~40 000 €. Une goutte d'eau pour eux.</li>
+                                </ul>
+                                <p class="text-sm text-lfi-red font-black mt-3 uppercase">La source sera à sec pour nous, mais jamais pour eux.</p>
                             </div>
                         </div>
                         <div class="lg:w-1/2 w-full">
@@ -296,7 +330,7 @@
                             <li><strong>Double Peine :</strong> Ce pompage assèche la nappe et avance les arrêtés de restriction d'eau pour tous les habitants.</li>
                         </ul>
                         <!-- BOUTON EN SAVOIR PLUS -->
-                        <button onclick="openDossierModal('arg1', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg1', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -315,7 +349,7 @@
                             <li><strong>Le surcoût :</strong> Il faut construire de gigantesques pompes à chaleur et 8 km de tuyaux.</li>
                             <li><strong>La facture :</strong> C'est l'agglomération (via nos impôts) qui paiera ce "greenwashing" pour Google.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg2', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg2', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -333,7 +367,7 @@
                         <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
                             <li><strong>Le syndrome d'Ashburn :</strong> Partout dans le monde, ces sites créent des dortoirs à machines aveugles, ultra-sécurisés, sans aucun dynamisme local.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg3', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg3', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -351,7 +385,7 @@
                         <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
                             <li><strong>Le hold-up du quota :</strong> En grillant tout notre quota légal de bétonnage, on empêche l'installation d'industries réellement utiles (solaire, recyclage) demain.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg4', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg4', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -369,7 +403,7 @@
                         <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
                             <li><strong>Le danger :</strong> Sans garantie juridique blindée, les retombées fiscales seront évaporées. L'Indre gardera toutes les nuisances, sans les revenus.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg5', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg5', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -388,7 +422,7 @@
                             <li><strong>Infrastructures offertes :</strong> Le renforcement du réseau RTE pour la zone sera financé par nos factures.</li>
                             <li><strong>Fait accompli :</strong> Accords de confidentialité et validation sans aucun audit environnemental indépendant.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg6', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg6', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -407,7 +441,7 @@
                             <li><strong>Zones ciblées :</strong> Étrechet, Châteauroux Sud, Le Poinçonnet, St-Maur.</li>
                             <li><strong>Biodiversité :</strong> Répulsion de la faune locale et destruction des cycles de chasse nocturne.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg7', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg7', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -425,7 +459,7 @@
                         <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
                             <li><strong>Tests Toxiques :</strong> Pour les maintenir en état, ils seront allumés régulièrement, recrachant massivement PM2.5 et oxydes d'azote (NOx) sur l'agglomération.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg8', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg8', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -443,7 +477,7 @@
                         <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
                             <li><strong>Désastre Global :</strong> Ces E-déchets toxiques (plomb, mercure, métaux lourds) sont trop souvent exportés et entassés dans des décharges à ciel ouvert dans les pays du Sud.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg9', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg9', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -461,7 +495,7 @@
                         <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
                             <li><strong>Injustice :</strong> Pour amener l'équivalent de 200 000 habitants à Ozans, le réseau doit être gonflé à nos frais. Ce sont les artisans et citoyens qui paieront l'addition (TURPE).</li>
                         </ul>
-                        <button onclick="openDossierModal('arg10', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg10', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -479,7 +513,7 @@
                         <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
                             <li><strong>Carnage social :</strong> Cette industrie assoiffe les hauts plateaux andins et maintient le travail des enfants dans les mines de RDC. Le "Cloud vert" n'existe pas.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg11', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg11', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -497,7 +531,7 @@
                         <ul class="text-sm text-gray-300 space-y-2 list-disc pl-4 marker:text-lfi-red">
                             <li><strong>Cercle vicieux :</strong> L'air autour du site atteindra les 30°C fatidiques bien plus vite (dès 26°C en ville), forçant le pompage anticipé de notre eau potable. Leurs calculs initiaux sont faux.</li>
                         </ul>
-                        <button onclick="openDossierModal('arg12', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg">En savoir plus +</button>
+                        <button onclick="openDossierModal('arg12', event)" class="absolute bottom-4 left-4 right-4 bg-white text-lfi-dark font-black uppercase text-sm py-3 hover:bg-lfi-cyan hover:text-white transition-colors border-2 border-white text-center shadow-lg btn-en-savoir-plus">En savoir plus +</button>
                     </div>
                 </div>
 
@@ -533,8 +567,8 @@
                 <div class="bg-[#1a1a1a] border-2 border-gray-800 p-8 hover:border-white transition-colors group shadow-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-16 h-16 bg-gray-800 group-hover:bg-white transition-colors transform rotate-45 translate-x-8 -translate-y-8"></div>
                     <span class="text-white font-black text-4xl mb-4 block italic">03.</span>
-                    <h3 class="text-white font-black text-2xl uppercase leading-tight mb-4">La guerre des puits (D'ici 10 ans)</h3>
-                    <p class="text-gray-400 text-sm font-medium leading-relaxed">En pompant massivement l'été, le site va créer un "cône de rabattement" souterrain. Le niveau de la nappe va baisser structurellement d'ici 10 ans. <strong>L'injustice sera totale :</strong> les pompes de nos agriculteurs n'atteindront plus l'eau, tandis que Google pourra forer à 200 mètres de profondeur pour continuer de se servir. La source sera à sec pour nous, pas pour eux.</p>
+                    <h3 class="text-white font-black text-2xl uppercase leading-tight mb-4">La guerre des puits (Le coût des +100m)</h3>
+                    <p class="text-gray-400 text-sm font-medium leading-relaxed">Le pompage créera un "cône de rabattement" souterrain. Pour retrouver l'eau, il faudra forer 100m plus bas. <strong>L'injustice financière sera totale :</strong> cela coûtera ~15 000€ à un agriculteur (ruineux), des centaines de milliers d'euros à la ville (hausse des impôts), mais seulement ~40 000€ à Google (une paille). La source sera à sec pour nous, pas pour eux.</p>
                 </div>
 
                 <!-- Arg 4: Coût public -->
@@ -921,6 +955,40 @@
         <div class="absolute top-1/2 left-0 -translate-y-1/2 opacity-[0.02] text-[20rem] font-black -rotate-12 pointer-events-none select-none text-white">RÉSISTANCE</div>
     </section>
 
+    <!-- SECTION 4.5: INTERPELLATION DES ÉLUS -->
+    <section id="section-interpellation" class="bg-gray-100 py-24 px-4 border-t-8 border-white relative overflow-hidden">
+        <div class="max-w-5xl mx-auto reveal relative z-10">
+            <h2 class="section-title text-5xl md:text-7xl mb-6 text-lfi-dark italic">FAITES PRESSION SUR <br><span class="text-lfi-cyan underline">LES ÉLUS.</span></h2>
+            <p class="text-xl font-bold mb-12 text-gray-600 max-w-3xl">Interpellez directement le Président de Châteauroux Métropole, nos députés, nos sénateurs et les présidents des conseils Départemental et Régional. Un clic suffit pour ouvrir votre messagerie avec ce courrier pré-rempli.</p>
+
+            <div class="bg-white border-4 border-lfi-dark p-8 md:p-12 shadow-lfi relative mb-12 transform md:-rotate-1">
+                <div class="absolute -top-5 left-8 bg-lfi-red text-white font-black uppercase text-sm px-4 py-2 shadow-sm">Modèle de courriel prêt à l'envoi</div>
+                <div class="font-medium text-gray-800 leading-relaxed space-y-4 text-[15px] md:text-lg">
+                    <p>Madame l'Élue, Monsieur l'Élu,</p>
+                    <p>Je vous interpelle aujourd'hui en tant que citoyen(ne) pour vous exprimer ma profonde inquiétude et mon opposition quant à l’opacité entourant le projet de Data Center sur la zone d’Ozans, Châteauroux (36).</p>
+                    <p>L’eau est un bien commun, pas une marchandise. Ce projet prévoit le prélèvement de près de 2 milliards de litres d’eau par an pour le refroidissement de serveurs appartenant à une multinationale. À l’heure du changement climatique et de la pression croissante sur nos nappes phréatiques, sacrifier une telle ressource pour des intérêts privés sans aucun débat public est une aberration écologique et démocratique.</p>
+                    <p>Le collectif Châteauroux Populaire a déjà adressé une mise en demeure par LRAR pour obtenir les documents administratifs et l’étude d’impact que vous nous cachez. En tant que représentant(e) de notre territoire, vous ne pouvez plus vous abriter derrière le secret des affaires.</p>
+                    <p>Je vous demande solennellement :</p>
+                    <ul class="list-disc pl-6 font-bold text-lfi-dark space-y-2">
+                        <li>D’exiger un moratoire immédiat sur ce projet.</li>
+                        <li>De rendre publiques toutes les conventions signées avec Tricolore Computing ou Google.</li>
+                        <li>D'organiser une véritable consultation citoyenne sur l'utilisation de nos ressources en eau.</li>
+                    </ul>
+                    <p>Nous ne laisserons pas nos ressources être asséchées par une "fuite en avant" technologique qui ne profite pas aux Castelroussins. Je suivrai avec la plus grande attention vos votes et vos prises de position sur ce dossier.</p>
+                    <p>Dans l'attente de votre réponse, je vous prie d'agréer, Madame l'Élue, Monsieur l'Élu, l'expression de mes salutations citoyennes.</p>
+                </div>
+            </div>
+
+            <div class="flex justify-center">
+                <button onclick="sendEmailToElus()" class="bg-lfi-cyan text-white font-black uppercase text-xl md:text-2xl px-8 md:px-12 py-6 hover:bg-lfi-dark transition-colors shadow-lfi flex items-center justify-center gap-4 group w-full md:w-auto">
+                    <svg class="w-8 h-8 fill-current group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    Interpeller les élus par e-mail
+                </button>
+            </div>
+            <p class="text-center text-xs font-bold text-gray-400 mt-4 uppercase tracking-widest">Ouvre automatiquement l'application mail de votre appareil.</p>
+        </div>
+    </section>
+
     <!-- SECTION : KIOSQUE MILITANT -->
     <section class="py-16 px-4 bg-gray-900 border-t-8 border-lfi-cyan relative overflow-hidden">
         <div class="max-w-6xl mx-auto reveal text-center relative z-10">
@@ -1039,6 +1107,38 @@
     </div>
 
     <script>
+        // --- GESTION DU MENU MOBILE BURGER ---
+        let isMobileMenuOpen = false;
+        function toggleMobileMenu() {
+            isMobileMenuOpen = !isMobileMenuOpen;
+            const menu = document.getElementById('mobileMenu');
+            const line1 = document.getElementById('burgerLine1');
+            const line2 = document.getElementById('burgerLine2');
+            const line3 = document.getElementById('burgerLine3');
+            
+            if (isMobileMenuOpen) {
+                // Ouvrir le menu
+                menu.classList.remove('opacity-0', 'pointer-events-none');
+                menu.classList.add('opacity-100', 'pointer-events-auto');
+                document.body.style.overflow = 'hidden'; // Bloque le scroll derrière
+                
+                // Animation Croix (X)
+                line1.classList.add('translate-y-[10px]', 'rotate-45', 'bg-lfi-red');
+                line2.classList.add('opacity-0');
+                line3.classList.add('-translate-y-[10px]', '-rotate-45', 'bg-lfi-red');
+            } else {
+                // Fermer le menu
+                menu.classList.add('opacity-0', 'pointer-events-none');
+                menu.classList.remove('opacity-100', 'pointer-events-auto');
+                document.body.style.overflow = 'auto'; // Rétablit le scroll
+                
+                // Retour au Burger
+                line1.classList.remove('translate-y-[10px]', 'rotate-45', 'bg-lfi-red');
+                line2.classList.remove('opacity-0');
+                line3.classList.remove('-translate-y-[10px]', '-rotate-45', 'bg-lfi-red');
+            }
+        }
+
         // --- BASE DE DONNÉES DES 12 ARGUMENTAIRES ULTRA-DÉVELOPPÉS ---
         const dossierData = {
             arg1: `
@@ -1057,11 +1157,13 @@
                 </ul>
 
                 <h3>Le risque d'assèchement à 10 ans (Le Cône de Rabattement)</h3>
-                <p>En pompant de manière hyper-concentrée au même endroit, le site va créer un trou de pression dans la nappe phréatique (ce que les hydrogéologues appellent un "cône de rabattement"). Avec la baisse des pluies hivernales due au réchauffement, le niveau de l'eau ne remontera plus assez.</p>
+                <p>En pompant de manière hyper-concentrée au même endroit, le site va créer un trou de pression dans la nappe phréatique (ce que les hydrogéologues appellent un "cône de rabattement"). Avec la baisse du niveau, tout le monde devra forer 100 mètres plus profond pour trouver de l'eau. Voici le véritable coût de cette guerre des puits :</p>
                 <ul>
-                    <li><strong>L'inégalité technologique :</strong> D'ici moins de 10 ans, la baisse de la nappe mettra à sec les puits de la ville et les forages des agriculteurs (qui sont peu profonds). Ils aspireront de l'air. </li>
-                    <li>Pendant ce temps, la multinationale, qui a les moyens de forer à 100 ou 200 mètres de profondeur, continuera de se servir sans être inquiétée. <strong>C'est une confiscation d'usage.</strong></li>
+                    <li><strong>Pour un agriculteur :</strong> Creuser 100m coûtera environ <strong>15 000 €</strong>. Un investissement imprévu qui ruinera les petites exploitations locales.</li>
+                    <li><strong>Pour la Ville (Eau potable) :</strong> Les forages municipaux exigent des normes sanitaires strictes. Coût : <strong>des centaines de milliers d'euros</strong> par captage. C'est le contribuable qui paiera l'addition.</li>
+                    <li><strong>Pour Google :</strong> Prolonger leur forage de 100m leur coûtera à peine <strong>40 000 €</strong>. Une goutte d'eau pour une multinationale.</li>
                 </ul>
+                <p><strong>C'est une confiscation d'usage :</strong> le "péage technique" de l'eau sera hors de portée du territoire, mais invisible pour Google.</p>
                 
                 <div class="bg-lfi-dark text-white p-6 my-6 border-l-8 border-lfi-red shadow-lg">
                     <h4 class="text-lfi-red font-black uppercase text-xl mb-3 tracking-wide">Le conflit d'usage : Une injustice insoutenable</h4>
@@ -1506,6 +1608,24 @@
                 data: { labels: ['Industrie Classique', 'Data Center'], datasets: [{ label: 'Emplois / Hectare', data: [40, 0.5], backgroundColor: ['#1a1a1a', '#9ca3af'], borderRadius: 4 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#eee' } }, x: { grid: { display: false } } } }
             });
+        }
+
+        // --- ENVOI MAIL AUX ÉLUS ---
+        function sendEmailToElus() {
+            // Adresses e-mails réelles et de cabinets des élus de l'Indre et de la Région
+            const adressesElus = "gil.averous@chateauroux-metropole.fr,cabinet@chateauroux-metropole.fr,francois.jolivet@assemblee-nationale.fr,alix.fruchon@assemblee-nationale.fr,f.gerbaud@senat.fr,n.bellurot@senat.fr,marc.fleuret@indre.fr,contact@indre.fr,francois.bonneau@centrevaldeloire.fr";
+            const sujet = "Moratoire immédiat sur le projet de Data Center à Ozans, Châteauroux (36)";
+            const corps = `Madame l'Élue, Monsieur l'Élu,\n\nJe vous interpelle aujourd'hui en tant que citoyen(ne) pour vous exprimer ma profonde inquiétude et mon opposition quant à l’opacité entourant le projet de Data Center sur la zone d’Ozans, Châteauroux (36).\n\nL’eau est un bien commun, pas une marchandise. Ce projet prévoit le prélèvement de près de 2 milliards de litres d’eau par an pour le refroidissement de serveurs appartenant à une multinationale. À l’heure du changement climatique et de la pression croissante sur nos nappes phréatiques, sacrifier une telle ressource pour des intérêts privés sans aucun débat public est une aberration écologique et démocratique.\n\nLe collectif Châteauroux Populaire a déjà adressé une mise en demeure par LRAR pour obtenir les documents administratifs et l’étude d’impact que vous nous cachez. En tant que représentant(e) de notre territoire, vous ne pouvez plus vous abriter derrière le secret des affaires.\n\nJe vous demande solennellement :\n- D’exiger un moratoire immédiat sur ce projet.\n- De rendre publiques toutes les conventions signées avec Tricolore Computing ou Google.\n- D'organiser une véritable consultation citoyenne sur l'utilisation de nos ressources en eau.\n\nNous ne laisserons pas nos ressources être asséchées par une "fuite en avant" technologique qui ne profite pas aux Castelroussins. Je suivrai avec la plus grande attention vos votes et vos prises de position sur ce dossier.\n\nDans l'attente de votre réponse, je vous prie d'agréer, Madame l'Élue, Monsieur l'Élu, l'expression de mes salutations citoyennes.`;
+            
+            const mailtoLink = `mailto:${adressesElus}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+            
+            // Création d'un lien invisible pour forcer l'ouverture (contourne les blocages de sécurité iframe)
+            const link = document.createElement('a');
+            link.href = mailtoLink;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
